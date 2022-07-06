@@ -1,5 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
+
+<?php
+    session_start();
+    if (!isset($_SESSION["usuario"])) {
+        header("Location:../index.php");
+    } else {
+        if ($_SESSION["usuario"]=="ok") {
+            $nombreUsuario=$_SESSION["nombreUsuario"];
+        }
+    }
+?>
+
 <head>
 
     <?php $url="http://".$_SERVER["HTTP_HOST"]."/instituto_87" ?>
@@ -18,7 +30,10 @@
                 <a class="nav-link" href="<?php echo $url;?>/administrador">Inicio</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Carrera</a>
+                <a class="nav-link" href="#">Usuarios</a>
+            </li> 
+            <li class="nav-item">
+                <a class="nav-link" href="#">Carreras</a>
             </li>    
             <li class="nav-item">
                 <a class="nav-link" href="#">Materias</a>
@@ -33,7 +48,7 @@
                 <a class="nav-link" href="#">Consultas</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?php echo $url;?>">Cerrar Sesión</a>
+                <a class="nav-link" href="../administrador/cerrar.php">Cerrar Sesión</a>
             </li>
         </ul>
     </nav>

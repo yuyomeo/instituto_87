@@ -40,7 +40,7 @@
                                 <option>DNI</option>
                                 <option>DU</option>
                                 <option>LC</option>
-                            <option>LE</option>
+                                <option>LE</option>
                             </select>   
                         </div> 
                     </div>
