@@ -12,6 +12,8 @@
     }
 ?>
 
+<?php $url="http://".$_SERVER["HTTP_HOST"]."/instituto_87"; ?>
+
 <head>
 
     <?php $url="http://".$_SERVER["HTTP_HOST"]."/instituto_87" ?>
@@ -22,6 +24,7 @@
     <link rel="stylesheet" href="<?php echo $url;?>/css/bootstrap.min.css" />
 
 </head>
+
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -33,7 +36,7 @@
                 <a class="nav-link" href="#">Usuarios</a>
             </li> 
             <li class="nav-item">
-                <a class="nav-link" href="#">Carreras</a>
+                <a class="nav-link" href="<?php echo $url;?>/administrador/carreras.php">Carreras</a>
             </li>    
             <li class="nav-item">
                 <a class="nav-link" href="#">Materias</a>
@@ -48,12 +51,12 @@
                 <a class="nav-link" href="#">Consultas</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="../administrador/cerrar.php">Cerrar Sesión</a>
+                <a class="nav-link" href=<?php echo $url;?>/administrador/cerrar.php>Cerrar Sesión</a>
             </li>
         </ul>
     </nav>
 
-    <br/><br/><br/>
+    <br/>
 
     <div class="container">
         <div class="row">
