@@ -10,7 +10,7 @@
         $bdNombre=(isset($dato["nombre"]))?$dato["nombre"]:"";
         $bdClave=(isset($dato["clave"]))?$dato["clave"]:"";
         $bdNivel=(isset($dato["nivel"]))?$dato["nivel"]:"";
-        if (($_POST["usuario"]==$bdNombre) && ($_POST["clave"]==$bdClave) && ($bdNivel=="1")) {
+        if (($_POST["usuario"]==$bdNombre) && ($_POST["clave"]==$bdClave) && (($bdNivel=="0") || ($bdNivel=="1"))) {
             $_SESSION["usuario"]="ok";
             $_SESSION["nombreUsuario"]=$bdNombre;
             header("Location:administrador");
@@ -40,17 +40,17 @@
                             </div>
                         <?php } ?>
                         <form method="POST">
-                        <div class = "form-group">
-                        <label for="exampleInputEmail1">Usuario</label>
-                        <input type="text" class="form-control" name="usuario" placeholder="Introduzca el nombre de usuario">
-                        </div>
-                        <br/><br/>
-                        <div class="form-group">
-                        <label for="exampleInputPassword1">Contraseña</label>
-                        <input type="password" class="form-control" name="clave" placeholder="Intruduzca la contraseña">
-                        </div>
-                        <br/><br/>
-                        <button type="submit" class="btn btn-primary">Ingresar</button>
+                            <div class = "form-group">
+                                <label for="exampleInputEmail1">Usuario</label>
+                                <input type="text" class="form-control" name="usuario" placeholder="Introduzca el nombre de usuario">
+                            </div>
+                            <br/><br/>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Contraseña</label>
+                                <input type="password" class="form-control" name="clave" placeholder="Intruduzca la contraseña">
+                            </div>
+                            <br/><br/>
+                            <button type="submit" class="btn btn-primary">Ingresar</button>
                         </form>
                     </div>
                 </div>

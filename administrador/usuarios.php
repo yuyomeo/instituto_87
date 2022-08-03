@@ -2,10 +2,11 @@
 
 <?php
     include("../config/conexionBD.php");
-    $sentenciaSQL=$conexion->prepare("SELECT * FROM carreras");
+    $sentenciaSQL=$conexion->prepare("SELECT * FROM usuarios");
     $sentenciaSQL->execute(); 
-    $listaCarreras=$sentenciaSQL->fetchAll(PDO::FETCH_ASSOC);
-    $fndResolucion=(isset($_POST["fndResolucion"]))?$_POST["fndResolucion"]:"";
+    $listaUsuarios=$sentenciaSQL->fetchAll(PDO::FETCH_ASSOC);
+    $fndNombre=(isset($_POST["fndNombre"]))?$_POST["fndNombre"]:"";
+    $fndNivel=(isset($_POST["fndNivel"]))?$_POST["fndNivel"]:"";
     $accion=(isset($_POST["accion"]))?$_POST["accion"]:"";
 ?>
 
@@ -14,16 +15,14 @@
         <div class="col-10">
             <table class="table table-striped table-bordered" style="width: 100%" id="tabla">
                 <thead>
-                    <th>Resolución</th>
-                    <th>Código</th>
-                    <th>Nombre</th>
+                    <th>Nombre de usuario</th>
+                    <th>Nivel de acceso</th>
                 </thead>
                 <tbody>
-                    <?php foreach($listaCarreras as $carrera) { ?>
-                    <tr>    
-                        <td><?php echo $carrera['resolucion']; ?></td>
-                        <td><?php echo $carrera['codigo']; ?></td>
-                        <td><?php echo $carrera['nombre']; ?></td>
+                    <?php foreach($listaUsuarios as $usuario) { ?>
+                    <tr <?php echo $usuario['nivel']==0?'style="display: none;"':''; ?> >
+                        <td><?php echo $usuario['nombre']; ?></td>           
+                        <td><?php echo $usuario['nivel']==1?'Directivo':($usuario['nivel']==2?'Preceptoría':'Alumno'); ?></td>
                     </tr>
                     <?php } ?>     
                 </tbody>
@@ -31,13 +30,13 @@
         </div>
         <div class="col-2">
             <div class="form-group">
-                <label for="fndResolucion"></label>
-                <input type="text" class="form-control" name="fndResolucion" id="fndResolucion" hidden>
+                <label for="fndNombre"></label>
+                <input type="text" class="form-control" name="fndNombre" id="fndNombre" hidden>
             </div>
             <div class="btn-toolbar">
-                <button type="button" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" onclick="location.href='carreras/agregar.php'">Agregar</button> 
-                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Modificar" id="Modificar" formaction="carreras/modificar.php" disabled>Modificar</button>
-                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Eliminar" id="Eliminar" formaction="carreras/eliminar.php" disabled>Eliminar</button>
+                <button type="button" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" onclick="location.href='usuarios/agregar.php'">Agregar nuevo usuario</button> 
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Modificar" id="Modificar" formaction="usuarios/modificar.php">Modificar mi cuenta</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Eliminar" id="Eliminar" formaction="usuarios/eliminar.php" disabled>Eliminar otro usuario</button>
             </div>
         </div>
     </div>
@@ -55,7 +54,7 @@
                 "url": "<?php echo $url;?>/json/spanish.json"
             },
             "columnDefs": [{  
-                "width": "70%", "targets": 2,
+                "width": "50%", "targets": 1,
             }], 
             "pageLength": 8,
             "lengthChange": false,   
@@ -64,14 +63,12 @@
             var pikResolucion = table.row( this ).data()[0];       
             if ($(this).hasClass('selected')) {
                 $(this).removeClass('selected');
-                document.getElementById("fndResolucion").value = "";
-                document.getElementById("Modificar").disabled = true;
+                document.getElementById("fndNombre").value = "";
                 document.getElementById("Eliminar").disabled = true;
             } else {
                 table.$('tr.selected').removeClass('selected');
                 $(this).addClass('selected');
-                document.getElementById("fndResolucion").value = pikResolucion;
-                document.getElementById("Modificar").disabled = false;
+                document.getElementById("fndNombre").value = pikResolucion;
                 document.getElementById("Eliminar").disabled = false;
             }
         });

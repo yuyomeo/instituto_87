@@ -35,9 +35,9 @@
                 <input type="text" class="form-control" name="fndResolucion" id="fndResolucion" hidden>
             </div>
             <div class="btn-toolbar">
-                <button type="button" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" onclick="location.href='carreras/agregar.php'">Agregar</button> 
-                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Modificar" id="Modificar" formaction="carreras/modificar.php" disabled>Modificar</button>
-                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Eliminar" id="Eliminar" formaction="carreras/eliminar.php" disabled>Eliminar</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Agregar" id="Agregar" formaction="materias/agregar.php" disabled>Agregar</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Modificar" id="Modificar" formaction="materias/modificar.php" disabled>Modificar</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Eliminar" id="Eliminar" formaction="materias/eliminar.php" disabled>Eliminar</button>
             </div>
         </div>
     </div>
@@ -65,12 +65,14 @@
             if ($(this).hasClass('selected')) {
                 $(this).removeClass('selected');
                 document.getElementById("fndResolucion").value = "";
+                document.getElementById("Agregar").disabled = true;
                 document.getElementById("Modificar").disabled = true;
                 document.getElementById("Eliminar").disabled = true;
             } else {
                 table.$('tr.selected').removeClass('selected');
                 $(this).addClass('selected');
                 document.getElementById("fndResolucion").value = pikResolucion;
+                document.getElementById("Agregar").disabled = false;
                 document.getElementById("Modificar").disabled = false;
                 document.getElementById("Eliminar").disabled = false;
             }

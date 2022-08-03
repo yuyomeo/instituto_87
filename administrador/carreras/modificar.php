@@ -1,10 +1,9 @@
 <?php include("../template/cabecera.php"); ?>
 
 <?php
-    $url="http://".$_SERVER["HTTP_HOST"]."/instituto_87";
-    $modificar='disabled';
-    $fndResolucion=(isset($_POST["fndResolucion"]))?$_POST["fndResolucion"]:"";
+    $sndResolucion=(isset($_POST["fndResolucion"]))?$_POST["fndResolucion"]:"";
     $txtResolucion=(isset($_POST["txtResolucion"]))?$_POST["txtResolucion"]:"";
+    $txtCodigo=(isset($_POST["txtCodigo"]))?$_POST["txtCodigo"]:"";
     $txtNombre=(isset($_POST["txtNombre"]))?$_POST["txtNombre"]:"";
     $txtCantidad_anios=(isset($_POST["txtCantidad_anios"]))?$_POST["txtCantidad_anios"]:"";
     $txtTipo=(isset($_POST["txtTipo"]))?$_POST["txtTipo"]:"";
@@ -14,119 +13,156 @@
     include("../../config/conexionBD.php");
 
     switch ($accion) {
-        case "Buscar":
-            if ($fndResolucion=="") {
-                echo "<script> alert('Faltan datos...'); </script>";
+        case "Modificar":
+            $sentenciaSQL=$conexion->prepare("SELECT * FROM carreras WHERE resolucion=:resolucion");
+            $sentenciaSQL->bindParam(':resolucion', $sndResolucion);
+            $sentenciaSQL->execute();
+            $dato=$sentenciaSQL->fetch(PDO::FETCH_LAZY);
+            $bdResolucion=(isset($dato["resolucion"]))?$dato["resolucion"]:"";
+            if ($_POST["fndResolucion"]==$bdResolucion) {
+                $_SESSION['varTemp'] = $sndResolucion;
+                $txtResolucion=$dato['resolucion'];
+                $txtCodigo=$dato['codigo'];
+                $txtNombre=$dato['nombre'];
+                $txtCantidad_anios=$dato['cantidad_anios'];
+                $txtTipo=$dato['tipo'];
+                $txtAnio_inicio=$dato['anio_inicio'];
+            }
+            break;
+        case "Guardar":
+            if (($txtResolucion=="") || ($txtCodigo=="") || ($txtNombre=="") || ($txtCantidad_anios=="") || ($txtAnio_inicio=="")) {
+                echo '
+                <script type="text/javascript">
+                    $(document).ready(function(){
+                        swal({
+                            position: "center",
+                            type: "error",
+                            title: "Faltan datos...",
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                    });
+                </script>
+                ';
             }    
             else {
-                $sentenciaSQL=$conexion->prepare("SELECT * FROM carreras WHERE resolucion=:resolucion");
-                $sentenciaSQL->bindParam(':resolucion', $fndResolucion);
-                $sentenciaSQL->execute();
-                $dato=$sentenciaSQL->fetch(PDO::FETCH_LAZY);
-                $bdResolucion=(isset($dato["resolucion"]))?$dato["resolucion"]:"";
-                if ($_POST["fndResolucion"]==$bdResolucion) {
-                    $_SESSION['varTemp'] = $_POST["fndResolucion"];
-                    $modificar='enabled';
-                    $txtResolucion=$dato['resolucion'];
-                    $txtNombre=$dato['nombre'];
-                    $txtCantidad_anios=$dato['cantidad_anios'];
-                    $txtTipo=$dato['tipo'];
-                    $txtAnio_inicio=$dato['anio_inicio'];
+                $valido = true;
+                $sentenciaSQL=$conexion->prepare("SELECT * FROM carreras");
+                $sentenciaSQL->execute(); 
+                $listaCarreras=$sentenciaSQL->fetchAll(PDO::FETCH_ASSOC);
+                foreach($listaCarreras as $carrera) {
+                    if (($carrera['resolucion']==$txtResolucion) && ($txtResolucion!= $_SESSION['varTemp'])) {
+                        $valido = false;
+                        echo '
+                        <script type="text/javascript">
+                            $(document).ready(function(){
+                                swal({
+                                    position: "center",
+                                    type: "error",
+                                    title: "Esta carrera ya existe...",
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                })
+                            });
+                        </script>
+                        ';
+                        break;
+                    }
                 }
-                else {
-                    $mensaje = "Error: resolución no encontrada.";
-                }
-            }    
-            break;
-            case "Modificar":
-                if (($txtResolucion=="") || ($txtNombre=="") || ($txtCantidad_anios=="") || ($txtAnio_inicio=="")) {
-                    echo "<script> alert('Faltan datos...'); </script>";
-                }    
-                else {
-                    $sentenciaSQL=$conexion->prepare("UPDATE carreras SET resolucion=:resolucion, nombre=:nombre, cantidad_anios=:cantidad_anios, tipo=:tipo, anio_inicio=:anio_inicio WHERE resolucion=:oldResolucion");
+                if ($valido) {
+                    $sentenciaSQL=$conexion->prepare("UPDATE carreras SET resolucion=:resolucion, codigo=:codigo, nombre=:nombre, cantidad_anios=:cantidad_anios, tipo=:tipo, anio_inicio=:anio_inicio WHERE resolucion=:oldResolucion");
                     $sentenciaSQL->bindParam(':resolucion', $txtResolucion);
+                    $sentenciaSQL->bindParam(':codigo', $txtCodigo);
                     $sentenciaSQL->bindParam(':nombre', $txtNombre);
                     $sentenciaSQL->bindParam(':cantidad_anios', $txtCantidad_anios);
                     $sentenciaSQL->bindParam(':tipo', $txtTipo);
                     $sentenciaSQL->bindParam(':anio_inicio', $txtAnio_inicio);
                     $sentenciaSQL->bindParam(':oldResolucion', $_SESSION['varTemp']);
-                    $sentenciaSQL->execute();           
-                }    
-                break;
+                    $sentenciaSQL->execute();
+                    echo '
+                    <script type="text/javascript">
+                        $(document).ready(function(){
+                            swal({
+                                position: "center",
+                                type: "success",
+                                title: "Los datos fueron guardados",
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                        });
+                        setTimeout( function() { window.location.href = "../carreras.php"; }, 1500 );
+                    </script>
+                    ';
+                }
+            }    
+            break;
     }
 ?>
 
-<div class="card">
+<br>
+<div class="card col-md-8 mx-auto">
     <div class="card-header">
-        Resolución de la carrera a modificar
+        <h3> Datos de la carrera a modificar </h3>
     </div>
-    <div class="card-body pb-4">
+    <div class="card-body">
         <div class="row" justif-content-center>
             <div class="col-md-12">
-                <form method="POST">               
-                    <div class="form-group row">
-                        <label for="fndResolucion" class="col-md-2 col-form-label">Número de resolución</label>
-                        <div class="col-md-8">
-                            <input type="text" class="form-control" name="fndResolucion" id="fndResolucion" placeholder="Ingrese la resolución de la carrera">
-                        </div>
-                        <div class="col-md-1">
-                            <button type="submit" name="accion" value="Buscar" class="btn btn-primary">Buscar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>    
-</div>
-<div class="card">
-    <div class="card-header">
-        Datos de la carrera a modificar
-    </div>
-    <div class="card-body py-2">
-        <div class="row" justif-content-center>
-            <div class="col-md-12">
+                <input type="text" class="form-control" name="sndResolucion" value="<?php echo $sndResolucion; ?>" id="sndResolucion" hidden>
                 <form method="POST">
-                    <fieldset <?php echo $modificar;?>>               
-                    <div class="form-group row">
-                        <label for="txtResolucion" class="col-md-2 col-form-label">Número de resolución</label>
-                        <div class="col-md-10">
-                            <input type="text" class="form-control" name="txtResolucion" value="<?php echo $txtResolucion; ?>" id="txtResolucion" placeholder="Ingrese la resolución de la carrera">
+                    <div class="form-row">
+                        <div class="col-md-9">
+                            <div class="md-form form-group">
+                                <label for="txtResolucion">Número de resolución</label>
+                                <input type="text" class="form-control col-md-3" pattern="*" maxlength="8" name="txtResolucion" value="<?php echo $txtResolucion; ?>" id="txtResolucion">   
+                            </div>
                         </div>
-                    </div>        
-                    <div class="form-group row">
-                        <label for="txtNombre" class="col-md-2 col-form-label">Nombre de la carrera</label>
-                        <div class="col-md-10">
-                            <input type="text" class="form-control" name="txtNombre" value="<?php echo $txtNombre; ?>" id="txtNombre" placeholder="Ingrese el nombre de la carrera">
-                        </div>
-                    </div>                    
-                    <div class="form-group row">
-                        <label for="txtCantidad_anios" class="col-md-2 col-form-label">Cantidad de años</label>
-                        <div class="col-md-10">
-                            <input type="number" class="form-control" name="txtCantidad_anios" value="<?php echo $txtCantidad_anios; ?>" id="txtCantidad_anios" placeholder="Ingrese cuántos años tiene la carrera">
-                        </div>
-                    </div>                    
-                    <div class = "form-group row">
-                        <label for="txtTipo" class="col-md-2 col-form-label">Tipo de carrera</label>
-                        <div class="col-md-10">
-                            <select class="form-control" name="txtTipo" value="<?php echo $txtTipo; ?>"id="txtTipo" selected>
-                                <option value="P" <?php echo $txtTipo=='P'?'selected':'' ;?>>Profesorado</option>
-                                <option value="T" <?php echo $txtTipo=='T'?'selected':'' ;?>>Tecnicatura</option>
-                            </select>   
-                        </div> 
-                    </div>                   
-                    <div class="form-group row">
-                        <label for="txtAnio_inicio" class="col-md-2 col-form-label">Año de inicio</label>
-                        <div class="col-md-10">
-                            <input type="number" class="form-control" name="txtAnio_inicio" value="<?php echo $txtAnio_inicio; ?>" id="txtAnio_inicio" placeholder="Ingrese año de inicio de la carrera">
+                        <div class="col-md-3">
+                            <div class="md-form form-group">
+                                <label class="float-right" for="txtCodigo">Código de resolución</label>
+                                <input type="text" class="form-control col-md-10 float-right" pattern="*" maxlength="8" name="txtCodigo" value="<?php echo $txtCodigo; ?>" id="txtCodigo">
+                            </div>
                         </div>
                     </div>
-                    <br/>
-                    <button type="submit" name="accion" value="Modificar" class="btn btn-primary">Modificar</button>
-                    </fieldset>
+                    <div class="form-row">
+                        <div class="col-md-12">
+                            <div class="md-form form-group">
+                                <label for="txtNombre">Nombre de la carrera</label>
+                                <input type="text" class="form-control" pattern="*" maxlength="60" name="txtNombre" value="<?php echo $txtNombre; ?>" id="txtNombre">   
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-md-9">
+                            <div class="md-form form-group">
+                                <label for="txtCantidad_anios">Cantidad de años</label>
+                                <input type="text" inputmode="numeric" class="form-control col-md-3" pattern="\d*" maxlength="1" class="form-control col-md-4" name="txtCantidad_anios" value="<?php echo $txtCantidad_anios; ?>" id="txtCantidad_anios">   
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="md-form form-group">
+                                <label class="float-right" for="txtTipo">Tipo de carrera</label>
+                                <select class="form-control col-md-10 float-right" name="txtTipo" value="<?php echo $txtTipo; ?>" id="txtTipo">
+                                    <option value="P" <?php echo $txtTipo=='P'?'selected':'' ;?>>Profesorado</option>
+                                    <option value="T" <?php echo $txtTipo=='T'?'selected':'' ;?>>Tecnicatura</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-md-9">
+                            <div class="md-form form-group">
+                                <label for="txtAnio_inicio">Año de inicio</label>
+                                <input type="text" inputmode="numeric" class="form-control col-md-3" pattern="\d*" maxlength="4" class="form-control col-md-4" name="txtAnio_inicio" value="<?php echo $txtAnio_inicio; ?>" id="txtAnio_inicio">   
+                            </div>
+                        </div>
+                    </div>
+                    <br>                            
+                    <button type="button" class="btn btn-primary" onclick="location.href='../carreras.php'">Volver</button>
+                    <button type="submit" name="accion" value="Guardar" class="btn btn-primary float-right">Guardar</button>
                 </form>
             </div>
         </div>
     </div>
-</div>
-  
+</div>                             
+
 <?php include("../template/pie.php"); ?>

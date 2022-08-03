@@ -1,8 +1,8 @@
 <?php include("../template/cabecera.php"); ?>
 
 <?php
-    $url="http://".$_SERVER["HTTP_HOST"]."/instituto_87";
     $txtResolucion=(isset($_POST["txtResolucion"]))?$_POST["txtResolucion"]:"";
+    $txtCodigo=(isset($_POST["txtCodigo"]))?$_POST["txtCodigo"]:"";
     $txtNombre=(isset($_POST["txtNombre"]))?$_POST["txtNombre"]:"";
     $txtCantidad_anios=(isset($_POST["txtCantidad_anios"]))?$_POST["txtCantidad_anios"]:"";
     $txtTipo=(isset($_POST["txtTipo"]))?$_POST["txtTipo"]:"";
@@ -13,80 +13,143 @@
 
     switch ($accion) {
         case "Agregar":
-            if (($txtResolucion=="") || ($txtNombre=="") || ($txtCantidad_anios=="") || ($txtAnio_inicio=="")) {
-                echo "<script> alert('Faltan datos...'); </script>";
+            if (($txtResolucion=="") || ($txtCodigo=="") || ($txtNombre=="") || ($txtCantidad_anios=="") || ($txtAnio_inicio=="")) {
+                echo '
+                <script type="text/javascript">
+                    $(document).ready(function(){
+                        swal({
+                            position: "center",
+                            type: "error",
+                            title: "Faltan datos...",
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                    });
+                </script>
+                ';
             }    
             else {
-                $sentenciaSQL=$conexion->prepare("INSERT INTO carreras (resolucion, nombre, cantidad_anios, tipo, anio_inicio) VALUES (:resolucion, :nombre, :cantidad_anios, :tipo, :anio_inicio);");
-                $sentenciaSQL->bindParam(':resolucion', $txtResolucion);
-                $sentenciaSQL->bindParam(':nombre', $txtNombre);
-                $sentenciaSQL->bindParam(':cantidad_anios', $txtCantidad_anios);
-                if ($txtTipo=="Profesorado") {
-                    $chrTipo='P';
+                $valido = true;
+                $sentenciaSQL=$conexion->prepare("SELECT * FROM carreras");
+                $sentenciaSQL->execute(); 
+                $listaCarreras=$sentenciaSQL->fetchAll(PDO::FETCH_ASSOC);
+                foreach($listaCarreras as $carrera) {
+                    if ($carrera['resolucion']==$txtResolucion) {
+                        $valido = false;
+                        echo '
+                        <script type="text/javascript">
+                            $(document).ready(function(){
+                                swal({
+                                    position: "center",
+                                    type: "error",
+                                    title: "Esta carrera ya existe...",
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                })
+                            });
+                        </script>
+                        ';
+                        break;
+                    }
                 }
-                else {
-                    $chrTipo='T';
+                if ($valido) {
+                    $sentenciaSQL=$conexion->prepare("INSERT INTO carreras (resolucion, codigo, nombre, cantidad_anios, tipo, anio_inicio) VALUES (:resolucion, :codigo, :nombre, :cantidad_anios, :tipo, :anio_inicio);");
+                    $sentenciaSQL->bindParam(':resolucion', $txtResolucion);
+                    $sentenciaSQL->bindParam(':codigo', $txtCodigo);
+                    $sentenciaSQL->bindParam(':nombre', $txtNombre);
+                    $sentenciaSQL->bindParam(':cantidad_anios', $txtCantidad_anios);
+                    if ($txtTipo=="Profesorado") {
+                        $chrTipo='P';
+                    }
+                    else {
+                        $chrTipo='T';
+                    }
+                    $sentenciaSQL->bindParam(':tipo', $chrTipo);
+                    $sentenciaSQL->bindParam(':anio_inicio', $txtAnio_inicio);
+                    $sentenciaSQL->execute();
+                    echo '
+                    <script type="text/javascript">
+                        $(document).ready(function(){
+                            swal({
+                                position: "center",
+                                type: "success",
+                                title: "Los datos fueron agregados",
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                        });
+                        setTimeout( function() { window.location.href = "../carreras.php"; }, 1500 );
+                    </script>
+                    ';
                 }
-                $sentenciaSQL->bindParam(':tipo', $chrTipo);
-                $sentenciaSQL->bindParam(':anio_inicio', $txtAnio_inicio);
-                $sentenciaSQL->execute();
             }    
             break;
     }
 ?>
 
-    <div class="card">
-        <div class="card-header">
-            Datos de la carrera a ingresar
-        </div>
-        <div class="card-body">
-            <div class="row" justif-content-center>
-                <div class="col-md-12">
-                    <form method="POST">
-                        <br/>
-                        <div class="form-group row">
-                            <label for="txtResolucion" class="col-md-2 col-form-label">Número de resolución</label>
-                            <div class="col-md-10">
-                                <input type="text" class="form-control" name="txtResolucion" id="txtResolucion" placeholder="Ingrese la resolución de la carrera">
+<br>
+<div class="card col-md-8 mx-auto">
+    <div class="card-header">
+        <h3> Datos de la carrera a ingresar </h3>
+    </div>
+    <div class="card-body">
+        <div class="row" justif-content-center>
+            <div class="col-md-12">
+                <form method="POST">
+                    <div class="form-row">
+                        <div class="col-md-9">
+                            <div class="md-form form-group">
+                                <label for="txtResolucion">Número de resolución</label>
+                                <input type="text" class="form-control col-md-3" pattern="*" maxlength="8" name="txtResolucion" id="txtResolucion">   
                             </div>
                         </div>
-                        <br/>
-                        <div class="form-group row">
-                            <label for="txtNombre" class="col-md-2 col-form-label">Nombre de la carrera</label>
-                            <div class="col-md-10">
-                                <input type="text" class="form-control" name="txtNombre" id="txtNombre" placeholder="Ingrese el nombre de la carrera">
+                        <div class="col-md-3">
+                            <div class="md-form form-group">
+                                <label class="float-right" for="txtCodigo">Código de resolución</label>
+                                <input type="text" class="form-control col-md-10 float-right" pattern="*" maxlength="8" name="txtCodigo" id="txtCodigo">
                             </div>
                         </div>
-                        <br/>
-                        <div class="form-group row">
-                            <label for="txtCantidad_anios" class="col-md-2 col-form-label">Cantidad de años</label>
-                            <div class="col-md-10">
-                                <input type="number" class="form-control" name="txtCantidad_anios" id="txtCantidad_anios" placeholder="Ingrese cuántos años tiene la carrera">
+                    </div>
+                    <div class="form-row">
+                        <div class="col-md-12">
+                            <div class="md-form form-group">
+                                <label for="txtNombre">Nombre de la carrera</label>
+                                <input type="text" class="form-control" pattern="*" maxlength="60" name="txtNombre" id="txtNombre">   
                             </div>
                         </div>
-                        <br/>
-                        <div class = "form-group row">
-                            <label for="txtTipo" class="col-md-2 col-form-label">Tipo de carrera</label>
-                            <div class="col-md-10">
-                                <select class="form-control" name="txtTipo" id="txtTipo">
+                    </div>
+                    <div class="form-row">
+                        <div class="col-md-9">
+                            <div class="md-form form-group">
+                                <label for="txtCantidad_anios">Cantidad de años</label>
+                                <input type="text" inputmode="numeric" class="form-control col-md-3" pattern="\d*" maxlength="1" class="form-control col-md-4" name="txtCantidad_anios" id="txtCantidad_anios">   
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="md-form form-group">
+                                <label class="float-right" for="txtTipo">Tipo de carrera</label>
+                                <select class="form-control col-md-10 float-right" name="txtTipo" id="txtTipo">
                                     <option>Profesorado</option>
                                     <option>Tecnicatura</option>
-                                </select>   
-                            </div> 
-                        </div>
-                        <br/>
-                        <div class="form-group row">
-                            <label for="txtAnio_inicio" class="col-md-2 col-form-label">Año de inicio</label>
-                            <div class="col-md-10">
-                                <input type="number" class="form-control" name="txtAnio_inicio" id="txtAnio_inicio" placeholder="Ingrese año de inicio de la carrera">
+                                </select>
                             </div>
                         </div>
-                        <br/>
-                        <button type="submit" name="accion" value="Agregar" class="btn btn-primary">Agregar</button>
-                    </form>
-                </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-md-9">
+                            <div class="md-form form-group">
+                                <label for="txtAnio_inicio">Año de inicio</label>
+                                <input type="text" inputmode="numeric" class="form-control col-md-3" pattern="\d*" maxlength="4" class="form-control col-md-4" name="txtAnio_inicio" id="txtAnio_inicio">   
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <button type="button" class="btn btn-primary" onclick="location.href='../carreras.php'">Volver</button>
+                    <button type="submit" name="accion" value="Agregar" class="btn btn-primary float-right">Agregar</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
 <?php include("../template/pie.php"); ?>
