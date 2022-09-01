@@ -53,7 +53,9 @@
                 if ($valido) {
                     $sentenciaSQL=$conexion->prepare("INSERT INTO usuarios (nombre, clave, nivel) VALUES (:nombre, :clave, :nivel);");
                     $sentenciaSQL->bindParam(':nombre', $txtNombre);
-                    $sentenciaSQL->bindParam(':clave', $txtClave);
+                    $salt = uniqid(mt_rand(), true);
+                    $hashClave = password_hash($txtClave, PASSWORD_DEFAULT);
+                    $sentenciaSQL->bindParam(':clave', $hashClave);
                     if ($txtNivel=="Directivo") {
                         $numNivel=1;
                     }

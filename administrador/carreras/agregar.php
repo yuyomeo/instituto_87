@@ -1,6 +1,8 @@
+<!-- Incluimos la cabecera general (usuarios, carreras, materias...) -->
 <?php include("../template/cabecera.php"); ?>
 
 <?php
+    // Pasamos las variables de los inputs recibidas del Post a variables PHP
     $txtResolucion=(isset($_POST["txtResolucion"]))?$_POST["txtResolucion"]:"";
     $txtCodigo=(isset($_POST["txtCodigo"]))?$_POST["txtCodigo"]:"";
     $txtNombre=(isset($_POST["txtNombre"]))?$_POST["txtNombre"]:"";
@@ -9,10 +11,13 @@
     $txtAnio_inicio=(isset($_POST["txtAnio_inicio"]))?$_POST["txtAnio_inicio"]:"";
     $accion=(isset($_POST["accion"]))?$_POST["accion"]:"";
 
+    // Abrimos la conexion con la base de datos
     include("../../config/conexionBD.php");
 
+    // Dependiendo de las acciones que tengamos en cada página realizamos el Case para cada situación
     switch ($accion) {
-        case "Agregar":
+        case "Agregar_y_volver":
+            // Si alguno de los campos necesarios están vacíos mostramos mensaje de error
             if (($txtResolucion=="") || ($txtCodigo=="") || ($txtNombre=="") || ($txtCantidad_anios=="") || ($txtAnio_inicio=="")) {
                 echo '
                 <script type="text/javascript">
@@ -29,6 +34,7 @@
                 ';
             }    
             else {
+                // Buscamos que la carrera a ingresar no exista anteriormente
                 $valido = true;
                 $sentenciaSQL=$conexion->prepare("SELECT * FROM carreras");
                 $sentenciaSQL->execute(); 
@@ -53,6 +59,8 @@
                     }
                 }
                 if ($valido) {
+                    // Pasamos los contenidos de las variables PHP como parámetro a la sentencia SQL
+                    // Al ejecutar la sentencia guardamos en la base de datos la nueva carrera
                     $sentenciaSQL=$conexion->prepare("INSERT INTO carreras (resolucion, codigo, nombre, cantidad_anios, tipo, anio_inicio) VALUES (:resolucion, :codigo, :nombre, :cantidad_anios, :tipo, :anio_inicio);");
                     $sentenciaSQL->bindParam(':resolucion', $txtResolucion);
                     $sentenciaSQL->bindParam(':codigo', $txtCodigo);
@@ -84,9 +92,87 @@
                 }
             }    
             break;
+
+        case "Agregar_y_materias":
+            // Si alguno de los campos necesarios están vacíos mostramos mensaje de error
+            if (($txtResolucion=="") || ($txtCodigo=="") || ($txtNombre=="") || ($txtCantidad_anios=="") || ($txtAnio_inicio=="")) {
+                echo '
+                <script type="text/javascript">
+                    $(document).ready(function(){
+                        swal({
+                            position: "center",
+                            type: "error",
+                            title: "Faltan datos...",
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                    });
+                </script>
+                ';
+            }    
+            else {
+                // Buscamos que la carrera a ingresar no exista anteriormente
+                $valido = true;
+                $sentenciaSQL=$conexion->prepare("SELECT * FROM carreras");
+                $sentenciaSQL->execute(); 
+                $listaCarreras=$sentenciaSQL->fetchAll(PDO::FETCH_ASSOC);
+                foreach($listaCarreras as $carrera) {
+                    if ($carrera['resolucion']==$txtResolucion) {
+                        $valido = false;
+                        echo '
+                        <script type="text/javascript">
+                            $(document).ready(function(){
+                                swal({
+                                    position: "center",
+                                    type: "error",
+                                    title: "Esta carrera ya existe...",
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                })
+                            });
+                        </script>
+                        ';
+                        break;
+                    }
+                }
+                if ($valido) {
+                    // Pasamos los contenidos de las variables PHP como parámetro a la sentencia SQL
+                    // Al ejecutar la sentencia guardamos en la base de datos la nueva carrera
+                    $sentenciaSQL=$conexion->prepare("INSERT INTO carreras (resolucion, codigo, nombre, cantidad_anios, tipo, anio_inicio) VALUES (:resolucion, :codigo, :nombre, :cantidad_anios, :tipo, :anio_inicio);");
+                    $sentenciaSQL->bindParam(':resolucion', $txtResolucion);
+                    $sentenciaSQL->bindParam(':codigo', $txtCodigo);
+                    $sentenciaSQL->bindParam(':nombre', $txtNombre);
+                    $sentenciaSQL->bindParam(':cantidad_anios', $txtCantidad_anios);
+                    if ($txtTipo=="Profesorado") {
+                        $chrTipo='P';
+                    }
+                    else {
+                        $chrTipo='T';
+                    }
+                    $sentenciaSQL->bindParam(':tipo', $chrTipo);
+                    $sentenciaSQL->bindParam(':anio_inicio', $txtAnio_inicio);
+                    $sentenciaSQL->execute();
+                    echo '
+                    <script type="text/javascript">
+                        $(document).ready(function(){
+                            swal({
+                                position: "center",
+                                type: "success",
+                                title: "Los datos fueron agregados",
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                        });
+                        setTimeout( function() { window.location.href = "../materias/editar.php?fndResolucion='; echo $txtResolucion; echo '&accion=Editar"}, 1500 );
+                    </script>
+                    ';
+                }
+            }    
+            break;
     }
 ?>
 
+<!-- Cuadros, inputs y botones que se muestran en pantalla -->
 <br>
 <div class="card col-md-8 mx-auto">
     <div class="card-header">
@@ -144,12 +230,22 @@
                         </div>
                     </div>
                     <br>
-                    <button type="button" class="btn btn-primary" onclick="location.href='../carreras.php'">Volver</button>
-                    <button type="submit" name="accion" value="Agregar" class="btn btn-primary float-right">Agregar</button>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-primary" onclick="location.href='../carreras.php'">VOLVER</button>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" name="accion" value="Agregar_y_volver" class="btn btn-primary">AGREGAR</button>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" name="accion" value="Agregar_y_materias" class="btn btn-primary float-right">AGREGAR Y CARGAR MATERIAS</button>
+                        </div>    
+                    </div>                  
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Cerramos el formato que abrimos en la cabecera -->
 <?php include("../template/pie.php"); ?>

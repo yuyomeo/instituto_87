@@ -21,7 +21,6 @@
             $bdResolucion=(isset($dato["resolucion"]))?$dato["resolucion"]:"";
             if ($_POST["fndResolucion"]==$bdResolucion) {
                 $_SESSION['varTemp'] = $sndResolucion;
-                $modificar='enabled';
                 $txtResolucion=$dato['resolucion'];
                 $txtCodigo=$dato['codigo'];
                 $txtNombre=$dato['nombre'];
@@ -31,21 +30,52 @@
             }
             break;
         case "Borrar":
-            $sentenciaSQL=$conexion->prepare("DELETE FROM carreras WHERE resolucion=:oldResolucion");
-            $sentenciaSQL->bindParam(':oldResolucion', $_SESSION['varTemp']);
-            $sentenciaSQL->execute();
             echo '
             <script type="text/javascript">
+                function borrarRegistro() {
+                    $.ajax({
+                        type: "GET",
+                        url: "borrar.php?resolucion='; echo $_SESSION['varTemp']; echo '",
+                        data: "",
+                        success: function(msg) {
+                            swal({
+                                position: "center",
+                                type: "success",
+                                title: "La carrera ha sido eliminada",
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                        },
+                        error: function() {
+                            swal({
+                                position: "center",
+                                type: "error",
+                                title: "Hubo un problema",
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                        },
+                    });
+                }
+
                 $(document).ready(function(){
-                    swal({
-                        position: "center",
-                        type: "success",
-                        title: "La carrera ha sido eliminada",
-                        showConfirmButton: false,
-                        timer: 1500
+                    Swal.fire({
+                        title: "¿Estás seguro?",
+                        text: "¡Se eliminará toda la carrera!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        cancelButtonText: "Cancelar",
+                        confirmButtonText: "Eliminar"
+                    }).then((result) => {
+                        if (result.value) {
+                            borrarRegistro();
+                            setTimeout( function() { window.location.href = "../carreras.php"; }, 1500 );               
+                        }
                     })
-                });
-                setTimeout( function() { window.location.href = "../carreras.php"; }, 1500 );
+                }); 
+                
             </script>
             ';
             break;

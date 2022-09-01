@@ -25,14 +25,15 @@
     include("../../config/conexionBD.php");
 
     switch ($accion) {
-        case "Modificar":
+        case "Eliminar":
             $sentenciaSQL=$conexion->prepare("SELECT * FROM alumnos WHERE documento=:documento");
             $sentenciaSQL->bindParam(':documento', $sndDocumento);
             $sentenciaSQL->execute();
             $dato=$sentenciaSQL->fetch(PDO::FETCH_LAZY);
             $bdDocumento=(isset($dato["documento"]))?$dato["documento"]:"";
             if ($_POST["fndDocumento"]==$bdDocumento) {
-                $_SESSION['varTemp'] = $sndDocumento;                
+                $_SESSION['varTemp'] = $sndDocumento;
+                $modificar='enabled';
                 $txtTipo=$dato['tipo_documento'];
                 $txtDocumento=$dato['documento'];
                 $txtNombre=$dato['nombre'];
@@ -51,99 +52,38 @@
                 $txtContacto_emergencia=$dato['contacto_emergencia'];
                 $txtEmail=$dato['email'];
                 $txtTitulo_secundario=$dato['titulo_secundario'];
-
             }
             break;
-        case "Guardar":
-            if (($txtDocumento=="") || ($txtTipo=="") || ($txtNombre=="") || ($txtApellido=="") || ($txtSexo=="") || ($dateFecha_nacimiento=="") || ($txtNacionalidad=="") || ($txtCodigo_postal=="") || ($txtLocalidad=="") || ($txtProvincia=="") || ($txtDomicilio=="") || ($txtNumero_domicilio=="") || ($txtTelefono=="") || ($txtEmail=="") || ($txtTitulo_secundario=="")) {
-                echo '
-                <script type="text/javascript">
-                    $(document).ready(function(){
-                        swal({
-                            position: "center",
-                            type: "error",
-                            title: "Faltan datos...",
-                            showConfirmButton: false,
-                            timer: 1500
-                        })
-                    });
-                </script>
-                ';
-            }    
-            else {
-                $valido = true;
-                $sentenciaSQL=$conexion->prepare("SELECT * FROM alumnos");
-                $sentenciaSQL->execute(); 
-                $listaAlumnos=$sentenciaSQL->fetchAll(PDO::FETCH_ASSOC);
-                foreach($listaAlumnos as $alumno) {
-                    if (($alumno['documento']==$txtDocumento) && ($txtDocumento!= $_SESSION['varTemp'])) {
-                        $valido = false;
-                        echo '
-                        <script type="text/javascript">
-                            $(document).ready(function(){
-                                swal({
-                                    position: "center",
-                                    type: "error",
-                                    title: "Este alumno ya existe...",
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                })
-                            });
-                        </script>
-                        ';
-                        break;
-                    }
-                }
-                if ($valido) {
-                    $sentenciaSQL=$conexion->prepare("UPDATE alumnos SET documento=:documento, tipo_documento=:tipo_documento, apellido=:apellido, nombre=:nombre, sexo=:sexo, fecha_nacimiento=:fecha_nacimiento, nacionalidad=:nacionalidad, provincia=:provincia, localidad=:localidad, codigo_postal=:codigo_postal, domicilio=:domicilio, numero_domicilio=:numero_domicilio, piso=:piso, departamento=:departamento, telefono=:telefono, contacto_emergencia=:contacto_emergencia, email=:email, titulo_secundario=:titulo_secundario WHERE documento=:oldDocumento");
-                    $sentenciaSQL->bindParam(':documento', $txtDocumento);
-                    $sentenciaSQL->bindParam(':tipo_documento', $txtTipo);
-                    $sentenciaSQL->bindParam(':nombre', $txtNombre);
-                    $sentenciaSQL->bindParam(':apellido', $txtApellido);
-                    $sentenciaSQL->bindParam(':sexo', $txtSexo);
-                    $sentenciaSQL->bindParam(':fecha_nacimiento', $dateFecha_nacimiento);
-                    $sentenciaSQL->bindParam(':nacionalidad', $txtNacionalidad);
-                    $sentenciaSQL->bindParam(':provincia', $txtProvincia);
-                    $sentenciaSQL->bindParam(':localidad', $txtLocalidad);
-                    $sentenciaSQL->bindParam(':codigo_postal', $txtCodigo_postal);
-                    $sentenciaSQL->bindParam(':domicilio', $txtDomicilio);
-                    $sentenciaSQL->bindParam(':numero_domicilio', $txtNumero_domicilio);
-                    $sentenciaSQL->bindParam(':piso', $txtPiso);
-                    $sentenciaSQL->bindParam(':departamento', $txtDepartamento);
-                    $sentenciaSQL->bindParam(':telefono', $txtTelefono);
-                    $sentenciaSQL->bindParam(':contacto_emergencia', $txtContacto_emergencia);
-                    $sentenciaSQL->bindParam(':email', $txtEmail);
-                    $sentenciaSQL->bindParam(':titulo_secundario', $txtTitulo_secundario);
-                    $sentenciaSQL->bindParam(':oldDocumento', $_SESSION['varTemp']);
-                    $sentenciaSQL->execute();
-                    echo '
-                    <script type="text/javascript">
-                        $(document).ready(function(){
-                            swal({
-                                position: "center",
-                                type: "success",
-                                title: "Los datos fueron guardados",
-                                showConfirmButton: false,
-                                timer: 1500
-                            })
-                        });
-                        setTimeout( function() { window.location.href = "../alumnos.php"; }, 1500 );
-                    </script>
-                    ';
-                }    
-            }
+        case "Borrar":
+            $sentenciaSQL=$conexion->prepare("DELETE FROM alumnos WHERE documento=:oldDocumento");
+            $sentenciaSQL->bindParam(':oldDocumento', $_SESSION['varTemp']);
+            $sentenciaSQL->execute();
+            echo '
+            <script type="text/javascript">
+                $(document).ready(function(){
+                    swal({
+                        position: "center",
+                        type: "success",
+                        title: "El Alumno ha sido eliminado",
+                        showConfirmButton: false,
+                        timer: 1500
+                    })
+                });
+                setTimeout( function() { window.location.href = "../alumnos.php"; }, 1500 );
+            </script>
+            ';
             break;
-    }
+    }   
 ?>
 
 <br>
 <div class="card col-md-8 mx-auto">
     <div class="card-header">
-        <h3> Datos del Alumno a Modificar </h3>
+        <h3> Eliminar Alumno </h3>
     </div>
     <div class="card-body">
         <div class="row" justif-content-center>
-            <div class="col-md-12">
+            <div class="col-mx-12">
                 <input type="text" class="form-control" name="sndDocumento" value="<?php echo $sndDocumento; ?>" id="sndDocumento" hidden>
                 <form method="POST">
                     <div class="form-row">
@@ -185,9 +125,9 @@
                             <div class="form-row">
                                 <label for="txtSexo">Sexo</label>
                             <div class="col-md-10">
-                                <input type="radio" class="form-check-input" name="txtSexo" id="txtSexo" value="M" <?php echo $txtSexo=='M'?'checked':'' ;?>> Masculino<br>
-                                <input type="radio" class="form-check-input" name="txtSexo" id="txtSexo" value="F" <?php echo $txtSexo=='F'?'checked':'' ;?>> Femenino<br>
-                                <input type="radio" class="form-check-input" name="txtSexo" id="txtSexo" value="O" <?php echo $txtSexo=='O'?'checked':'' ;?>> Otro<br>
+                                <input type="radio" class="form-check-input" name="txtSexo" id="txtSexo" value="M"> Masculino<br>
+                                <input type="radio" class="form-check-input" name="txtSexo" id="txtSexo" value="F"> Femenino<br>
+                                <input type="radio" class="form-check-input" name="txtSexo" id="txtSexo" value="O"> Otro<br>
                             </div>
                         </div>
                     </div>
@@ -195,7 +135,7 @@
                         <div class="col-md-9">
                             <div class="md-form form-group">
                                 <label for="dateFecha_nacimiento">Fecha de Nacimiento</label>
-                                <input type="text" inputmode="date" class="form-control col-md-3" class="form-control col-md-10" name="dateFecha_nacimiento" value="<?php echo $dateFecha_nacimiento; ?>" id="dateFecha_nacimiento">   
+                                <input type="text" inputmode="date" class="form-control col-md-3"  class="form-control col-md-10" name="dateFecha_nacimiento" value="<?php echo $dateFecha_nacimiento; ?>" id="dateFecha_nacimiento">   
                             </div>
                         </div>
                     </div>
@@ -204,7 +144,6 @@
                             <div class="md-form form-group">
                                 <label for="txtNacionalidad" class="col-md-3 col-form-label">Nacionalidad</label>
                                 <input type="text" class="form-control col-md-3" pattern="*" maxlength="25" name="txtNacionalidad" value="<?php echo $txtNacionalidad; ?>" id="txtNacionalidad">                            
-                            </div>
                         </div> 
                     </div>
                     <div class="form-row">
@@ -283,25 +222,26 @@
                         <div class="col-md-9">
                             <div class="form-group row">
                                 <label for="txtEmail" class="col-md-9 col-form-label">Email</label>
-                                <input type="text" class="form-control col-md-12" name="txtEmail" value="<?php echo $txtEmail; ?>" id="txtEmail">
+                                <input type="text" class="form-control col-md-14" name="txtEmail" value="<?php echo $txtEmail; ?>" id="txtEmail">
                             </div>
                         </div>
                     </div>                      
                     <div class="form-row">
                         <label for="txtTitulo_secundario" class="col-md-9 col-form-label">Titulo secundario</label>                        
-                    <div class="col-md-6">
-                        <input type="radio" class="form-check-input" name="txtTitulo_secundario" id="txtTitulo_secundario" value="1"<?php echo $txtTitulo_secundario=='1'?'checked':'' ;?>> Si<br>
-                        <input type="radio" class="form-check-input" name="txtTitulo_secundario" id="txtTitulo_secundario" value="0"<?php echo $txtTitulo_secundario=='0'?'checked':'' ;?>> No<br>
                     </div>
-                    <br>                    
+                    <div class="col-md-10">
+                        <input type="radio" class="form-check-input" name="txtTitulo_secundario" id="txtTitulo_secundario" value="1"> Si<br>
+                        <input type="radio" class="form-check-input" name="txtTitulo_secundario" id="txtTitulo_secundario" value="0"> No<br>
+                    </div>                      
+                    <br> 
                     <div class="col-md-12">                             
                         <button type="button" class="btn btn-primary float-left" onclick="location.href='../alumnos.php'">Volver</button>
-                        <button type="submit" name="accion" value="Guardar" class="btn btn-primary float-right">Guardar</button>
-                    </div>                    
+                        <button type="submit" name="accion" value="Borrar" class="btn btn-primary float-right">Borrar</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
+</div>                             
 
 <?php include("../template/pie.php"); ?>

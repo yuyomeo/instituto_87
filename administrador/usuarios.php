@@ -35,8 +35,9 @@
             </div>
             <div class="btn-toolbar">
                 <button type="button" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" onclick="location.href='usuarios/agregar.php'">Agregar nuevo usuario</button> 
-                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Modificar" id="Modificar" formaction="usuarios/modificar.php">Modificar mi cuenta</button>
-                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Eliminar" id="Eliminar" formaction="usuarios/eliminar.php" disabled>Eliminar otro usuario</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Modificar1" id="Modificar1" formaction="usuarios/modificar.php" disabled>Modificar usuario</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Eliminar" id="Eliminar" formaction="usuarios/eliminar.php" disabled>Eliminar usuario</button>
+                <button type="submit" class="btn btn-primary btn-block mt-3 mb-3" style="width: 100%" name="accion" value="Modificar2" id="Modificar2" formaction="usuarios/modificar.php">Modificar mi cuenta</button>
             </div>
         </div>
     </div>
@@ -64,11 +65,13 @@
             if ($(this).hasClass('selected')) {
                 $(this).removeClass('selected');
                 document.getElementById("fndNombre").value = "";
+                document.getElementById("Modificar1").disabled = true;
                 document.getElementById("Eliminar").disabled = true;
             } else {
                 table.$('tr.selected').removeClass('selected');
                 $(this).addClass('selected');
                 document.getElementById("fndNombre").value = pikResolucion;
+                document.getElementById("Modificar1").disabled = false;
                 document.getElementById("Eliminar").disabled = false;
             }
         });

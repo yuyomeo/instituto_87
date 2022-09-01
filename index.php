@@ -10,7 +10,7 @@
         $bdNombre=(isset($dato["nombre"]))?$dato["nombre"]:"";
         $bdClave=(isset($dato["clave"]))?$dato["clave"]:"";
         $bdNivel=(isset($dato["nivel"]))?$dato["nivel"]:"";
-        if (($_POST["usuario"]==$bdNombre) && ($_POST["clave"]==$bdClave) && (($bdNivel=="0") || ($bdNivel=="1"))) {
+        if (($_POST["usuario"]==$bdNombre) && (password_verify($_POST["clave"], $bdClave)) && (($bdNivel=="0") || ($bdNivel=="1"))) {
             $_SESSION["usuario"]="ok";
             $_SESSION["nombreUsuario"]=$bdNombre;
             header("Location:administrador");
